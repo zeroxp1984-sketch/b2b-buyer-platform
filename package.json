@@ -1,0 +1,14 @@
+﻿{
+  "name": "b2b-lead-collector",
+  "version": "1.0.0",
+  "private": true,
+  "description": "B2B外贸获客系统 - 抓取/分类/开发信/海关数据",
+  "type": "module",
+  "scripts": {
+    "scrape": "node scraper.mjs",
+    "batch": "node batch-scrape.mjs",
+    "crm": "node crm.mjs",
+    "customs": "node customs-scraper.mjs",
+    "batch-customs": "node batch-customs.mjs"
+  }
+}

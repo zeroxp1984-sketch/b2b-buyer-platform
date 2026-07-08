@@ -1,0 +1,473 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="海外智能穿戴采购商采集系统 - B2B采购商开发工具，从Google、Facebook、LinkedIn、Instagram采集小型批发商和采购商">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>海外智能穿戴采购商采集系统</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+<style>.hide { display: none; }</style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">B2B</div>
+        <div>
+          <strong>海外采购商采集</strong>
+          <span>智能穿戴专用工作台</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-view="dashboard" aria-current="page">总览</button>
+        <button class="nav-item" data-view="tasks">采集任务</button>
+        <button class="nav-item" data-view="keywords">关键词库</button>
+        <button class="nav-item" data-view="leads">采购商库</button>
+        <button class="nav-item" data-view="messages">开发信</button>
+        <button class="nav-item" data-view="accounts">账号设置</button>
+      </nav>
+      <div class="status-box">
+        <span class="pulse" aria-label="系统运行中"></span>
+        <div>
+          <strong id="runtime">00:00:00</strong>
+          <small>今日自动运行时长</small>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="viewTitle">总览</h1>
+          <p id="viewHint">集中搜索 Google、Facebook、LinkedIn、Instagram、海关数据 上的小型批发商和采购商。</p>
+        </div>
+        <div class="top-actions">
+          <button type="button" class="ghost-btn" id="exportBtn">导出采购商</button>
+          <button type="button" class="primary-btn" id="runBtn">启动自动采集</button>
+        </div>
+      </header>
+
+      <section class="view active" id="dashboard">
+        <div class="metric-grid">
+          <div class="metric"><span>今日采集</span><strong id="metricCollected">0</strong><small>覆盖 0 个国家</small></div>
+          <div class="metric"><span>有效采购商</span><strong id="metricValid">0</strong><small>邮箱/主页已校验</small></div>
+          <div class="metric"><span>已开发</span><strong id="metricSent">0</strong><small>LinkedIn / Email / DM</small></div>
+          <div class="metric"><span>高意向买家</span><strong id="metricHot">0</strong><small>小型批发商、采购商、独立零售店</small></div>
+        </div>
+        <div class="process-grid">
+          <div class="process-step"><b>01</b><strong>产品拆分</strong><span>细分品类 + 买家词扩展</span></div>
+          <div class="process-step"><b>02</b><strong>公开搜客</strong><span>Google / Facebook / LinkedIn / Instagram</span></div>
+          <div class="process-step"><b>03</b><strong>证据验证</strong><span>官网、社媒、公开页面交叉验证</span></div>
+          <div class="process-step"><b>04</b><strong>邮箱提取</strong><span>公开邮箱、联系人、主页来源</span></div>
+          <div class="process-step"><b>05</b><strong>客户画像</strong><span>小批发商、买手、店主分类</span></div>
+          <div class="process-step"><b>06</b><strong>AI 开发</strong><span>首封、跟进、社媒私信</span></div>
+        </div>
+        <div class="workspace">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>任务流水</h2>
+              <button type="button" class="text-btn" id="clearLog">清空</button>
+            </div>
+            <div class="timeline" id="activityLog"><div class="empty-state">暂无任务流水，启动采集后自动记录</div></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <h2>平台来源占比</h2>
+            </div>
+            <div class="source-list" id="sourceList"><div class="empty-state">启动采集后将显示各平台来源占比</div></div>
+          </section>
+        </div>
+      </section>
+      <section class="view" id="tasks">
+        <div class="builder">
+          <form class="panel form-panel" onsubmit="return false">
+            <div class="panel-head">
+              <h2>新建采购商采集任务</h2>
+            </div>
+            <label>任务名称<input id="taskName" name="taskName" value=""></label>
+            <label>采集平台
+              <select id="platform" name="platform">
+                <option value="facebook">Facebook</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="google">Google 搜索</option>
+                <option value="instagram">Instagram</option>
+                <option value="customs">海关数据</option>
+              </select>
+            </label>
+            <label>搜客模式
+              <select id="searchMode" name="searchMode">
+                <option value="free">免费公开搜客</option>
+                <option value="enhanced">公开搜客 + 邮箱增强</option>
+              </select>
+            </label>
+            <label>搜索深度
+              <select id="searchDepth" name="searchDepth">
+                <option value="standard">标准：官网 + 社媒公开页</option>
+                <option value="fast">快速：搜索引擎 + 公司主页</option>
+                <option value="deep">深度：地图/黄页 + 交叉验证</option>
+              </select>
+            </label>
+            <label>产品关键词<input id="keywords" name="keywords" value="" placeholder="示例: hair dryer, smart ring, smart watch (用逗号分隔多个关键词)"></label>
+            <div class="split">
+              <label>目标国家/地区（可选）
+              <select id="targetCountry" name="targetCountry">
+                <option value="">不限 / All Global</option>
+                <optgroup label="--- 北美 North America ---">
+                <option value="United States">美国 / United States</option>
+                <option value="Canada">加拿大 / Canada</option>
+                <option value="Mexico">墨西哥 / Mexico</option>
+                </optgroup>
+                <optgroup label="--- 欧洲 Europe ---">
+                <option value="Germany">德国 / Germany</option>
+                <option value="United Kingdom">英国 / United Kingdom</option>
+                <option value="France">法国 / France</option>
+                <option value="Italy">意大利 / Italy</option>
+                <option value="Netherlands">荷兰 / Netherlands</option>
+                <option value="Spain">西班牙 / Spain</option>
+                <option value="Belgium">比利时 / Belgium</option>
+                <option value="Poland">波兰 / Poland</option>
+                <option value="Sweden">瑞典 / Sweden</option>
+                <option value="Switzerland">瑞士 / Switzerland</option>
+                <option value="Denmark">丹麦 / Denmark</option>
+                <option value="Norway">挪威 / Norway</option>
+                <option value="Finland">芬兰 / Finland</option>
+                <option value="Portugal">葡萄牙 / Portugal</option>
+                <option value="Greece">希腊 / Greece</option>
+                <option value="Austria">奥地利 / Austria</option>
+                <option value="Ireland">爱尔兰 / Ireland</option>
+                <option value="Czech Republic">捷克 / Czech Republic</option>
+                <option value="Hungary">匈牙利 / Hungary</option>
+                <option value="Romania">罗马尼亚 / Romania</option>
+                <option value="Ukraine">乌克兰 / Ukraine</option>
+                <option value="Turkey">土耳其 / Turkey</option>
+                <option value="Russia">俄罗斯 / Russia</option>
+                </optgroup>
+                <optgroup label="--- 亚太 Asia Pacific ---">
+                <option value="Japan">日本 / Japan</option>
+                <option value="South Korea">韩国 / South Korea</option>
+                <option value="India">印度 / India</option>
+                <option value="Australia">澳大利亚 / Australia</option>
+                <option value="New Zealand">新西兰 / New Zealand</option>
+                <option value="Vietnam">越南 / Vietnam</option>
+                <option value="Indonesia">印度尼西亚 / Indonesia</option>
+                <option value="Thailand">泰国 / Thailand</option>
+                <option value="Malaysia">马来西亚 / Malaysia</option>
+                <option value="Philippines">菲律宾 / Philippines</option>
+                <option value="Singapore">新加坡 / Singapore</option>
+                <option value="Pakistan">巴基斯坦 / Pakistan</option>
+                <option value="Bangladesh">孟加拉 / Bangladesh</option>
+                <option value="Sri Lanka">斯里兰卡 / Sri Lanka</option>
+                <option value="Myanmar">缅甸 / Myanmar</option>
+                <option value="Cambodia">柬埔寨 / Cambodia</option>
+                <option value="Nepal">尼泊尔 / Nepal</option>
+                <option value="Kazakhstan">哈萨克斯坦 / Kazakhstan</option>
+                </optgroup>
+                <optgroup label="--- 中东 Middle East ---">
+                <option value="UAE">阿联酋 / UAE</option>
+                <option value="Saudi Arabia">沙特阿拉伯 / Saudi Arabia</option>
+                <option value="Israel">以色列 / Israel</option>
+                <option value="Qatar">卡塔尔 / Qatar</option>
+                <option value="Kuwait">科威特 / Kuwait</option>
+                <option value="Oman">阿曼 / Oman</option>
+                <option value="Bahrain">巴林 / Bahrain</option>
+                <option value="Jordan">约旦 / Jordan</option>
+                <option value="Iraq">伊拉克 / Iraq</option>
+                <option value="Iran">伊朗 / Iran</option>
+                </optgroup>
+                <optgroup label="--- 中南美 Latin America ---">
+                <option value="Brazil">巴西 / Brazil</option>
+                <option value="Chile">智利 / Chile</option>
+                <option value="Argentina">阿根廷 / Argentina</option>
+                <option value="Colombia">哥伦比亚 / Colombia</option>
+                <option value="Peru">秘鲁 / Peru</option>
+                <option value="Ecuador">厄瓜多尔 / Ecuador</option>
+                <option value="Dominican Republic">多米尼加 / Dominican Republic</option>
+                <option value="Guatemala">危地马拉 / Guatemala</option>
+                <option value="Panama">巴拿马 / Panama</option>
+                <option value="Costa Rica">哥斯达黎加 / Costa Rica</option>
+                <option value="Venezuela">委内瑞拉 / Venezuela</option>
+                <option value="Uruguay">乌拉圭 / Uruguay</option>
+                </optgroup>
+                <optgroup label="--- 非洲 Africa ---">
+                <option value="South Africa">南非 / South Africa</option>
+                <option value="Nigeria">尼日利亚 / Nigeria</option>
+                <option value="Egypt">埃及 / Egypt</option>
+                <option value="Kenya">肯尼亚 / Kenya</option>
+                <option value="Morocco">摩洛哥 / Morocco</option>
+                <option value="Algeria">阿尔及利亚 / Algeria</option>
+                <option value="Tunisia">突尼斯 / Tunisia</option>
+                <option value="Ghana">加纳 / Ghana</option>
+                <option value="Ethiopia">埃塞俄比亚 / Ethiopia</option>
+                <option value="Tanzania">坦桑尼亚 / Tanzania</option>
+                <option value="Angola">安哥拉 / Angola</option>
+                <option value="Senegal">塞内加尔 / Senegal</option>
+                </optgroup></select>
+            </label>
+              <label>采集数量<input type="number" id="limit" name="limit" value="0" min="10" max="3000"></label>
+            </div>
+            <div class="split hide" id="customsFields">
+              <label>HS编码（海关用）<input id="hsCode" name="hsCode" value="851640" placeholder="例: 851640(吹风机)"></label>
+              <label>采购商类型<select id="buyerTypeCustoms" name="buyerTypeCustoms">
+                <option value="wholesale buyer">批发商(wholesale buyer)</option>
+                <option value="importer">进口商(importer)</option>
+                <option value="distributor">经销商(distributor)</option>
+                <option value="retailer">零售商(retailer)</option>
+              </select></label>
+            </div>
+            <div class="split">
+              <label>搜索语言
+                <select id="searchLanguage" name="searchLanguage">
+                  <option value="english">英语搜索</option>
+                  <option value="local">目标市场当地语言</option>
+                  <option value="mixed">英语 + 当地语言</option>
+                </select>
+              </label>
+              <label>目标验证
+                <select id="verifyMode" name="verifyMode">
+                  <option value="standard">标准验证</option>
+                  <option value="strict">严格验证</option>
+                  <option value="loose">宽松保留候选</option>
+                </select>
+              </label>
+            </div>
+            <div class="switch-row">
+              <label><input type="checkbox" id="dedupe" name="dedupe" checked> 自动去重</label>
+              <label><input type="checkbox" id="score" name="score" checked> 采购意向评分</label>
+              <label><input type="checkbox" id="autoMessage" name="autoMessage" checked> 采集后自动开发</label>
+            </div>
+            <button type="submit" class="primary-btn wide" id="createTask">保存并运行</button>
+          </form>
+          <section class="panel">
+            <div class="panel-head">
+              <h2>运行中的任务</h2>
+            </div>
+            <div class="task-list" id="taskList"><div class="empty-state">暂无运行中的任务，在左侧创建新任务</div></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="keywords">
+        <div class="keyword-layout">
+          <form class="panel form-panel" onsubmit="return false">
+            <div class="panel-head">
+              <h2>B2B 搜索词生成器</h2>
+            </div>
+            <label>目标产品
+              <select id="keywordProduct" name="keywordProduct">
+                <option value="all">全部智能穿戴产品</option>
+                <option value="smart ring">智能戒指 / smart ring</option>
+                <option value="smart watch">智能手表 / smart watch</option>
+                <option value="smart band">智能手链 / smart band</option>
+                <option value="smart glasses">智能眼镜 / smart glasses</option>
+                <option value="AI glasses">AI 眼镜 / AI glasses</option>
+                <option value="hair dryer">吹风机 / hair dryer</option>
+              </select>
+            </label>
+            <label>目标市场
+              <select id="keywordMarket" name="keywordMarket">
+                <option value="Global">Global</option>
+                <option value="United States">United States</option>
+                <option value="Germany">Germany</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="France">France</option>
+                <option value="Spain">Spain</option>
+                <option value="United Arab Emirates">United Arab Emirates</option>
+                <option value="Brazil">Brazil</option>
+                <option value="Mexico">Mexico</option>
+                <option value="Vietnam">Vietnam</option>
+                <option value="Indonesia">Indonesia</option>
+              </select>
+            </label>
+            <label>买家类型
+              <select id="buyerType" name="buyerType">
+                <option value="all">小型批发商 + 采购商</option>
+                <option value="small wholesaler">small wholesaler</option>
+                <option value="wholesale buyer">wholesale buyer</option>
+                <option value="independent retailer">independent retailer</option>
+                <option value="boutique buyer">boutique buyer</option>
+                <option value="online store owner">online store owner</option>
+              </select>
+            </label>
+            <div class="keyword-actions">
+              <button type="button" class="primary-btn wide" id="generateKeywords">生成搜索词</button>
+              <button type="button" class="ghost-btn wide" id="exportKeywords">导出关键词</button>
+            </div>
+          </form>
+          <section class="panel">
+            <div class="panel-head">
+              <h2>搜索模板</h2>
+            </div>
+            <div class="template-grid" id="templateGrid"><div class="empty-state">选择产品和市场后点击"生成搜索词"获取模板</div></div>
+          </section>
+        </div>
+        <section class="panel keyword-results-panel">
+          <div class="panel-head">
+            <h2>关键词矩阵</h2>
+            <input class="search" id="keywordSearch" name="keywordSearch" placeholder="筛选小批发商、采购商、平台、市场">
+          </div>
+          <div class="keyword-list" id="keywordList"><div class="empty-state">关键词矩阵将在生成后显示在这里</div></div>
+        </section>
+      </section>
+
+      <section class="view" id="leads">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>海外采购商库</h2>
+            <input class="search" id="leadSearch" name="leadSearch" placeholder="搜索公司、邮箱、国家、产品、平台">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>采购商</th><th>联系方式</th><th>个人联系</th><th>可信度</th><th>平台</th><th>国家</th><th>评分</th><th>阶段</th><th>状态</th><th>操作</th></tr>
+              </thead>
+              <tbody id="leadRows"><tr class="empty-row"><td colspan="10" class="empty-state">暂无采购商数据，启动采集任务后自动填充</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="panel lead-profile">
+          <div class="panel-head">
+            <h2>客户画像与证据链</h2>
+            <span class="mini-badge" id="leadStageBadge">-</span>
+          </div>
+          <div id="leadDetail" class="lead-detail"><div class="empty-state">点击左侧采购商查看详细画像与证据链</div></div>
+          <div class="panel-head" style="margin-top:8px;border-top:1px solid #2a2a3e">
+            <h2>CRM 跟进管理</h2>
+          </div>
+          <div style="padding:8px 16px 4px">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+              <label style="font-size:12px;color:#888">客户阶段
+                <select id="crmStage" style="margin-left:4px;background:#1e1e32;color:#e0e0e0;border:1px solid #333;border-radius:4px;padding:4px 8px">
+                  <option value="潜在">潜在</option>
+                  <option value="意向">意向</option>
+                  <option value="报价">报价</option>
+                  <option value="成交">成交</option>
+                  <option value="关闭">关闭</option>
+                </select>
+              </label>
+              <label style="font-size:12px;color:#888">下次联系
+                <input type="date" id="crmNextContact" style="margin-left:4px;background:#1e1e32;color:#e0e0e0;border:1px solid #333;border-radius:4px;padding:3px 6px">
+              </label>
+              <button type="button" class="text-btn" id="crmSaveBtn" style="font-size:12px">保存</button>
+            </div>
+            <div style="margin-bottom:4px">
+              <label style="font-size:12px;color:#888">跟进备注</label>
+              <div style="display:flex;gap:6px;margin-top:4px">
+                <input type="text" id="crmNoteInput" placeholder="输入跟进备注..." style="flex:1;background:#1e1e32;color:#e0e0e0;border:1px solid #333;border-radius:4px;padding:6px 10px">
+                <button type="button" class="text-btn" id="crmAddNoteBtn">添加</button>
+              </div>
+            </div>
+            <div id="crmNotesList" style="font-size:12px;color:#aaa;max-height:120px;overflow-y:auto;margin-top:4px"></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="messages">
+        <div class="letter-layout">
+          <form class="panel form-panel" onsubmit="return false">
+            <div class="panel-head"><h2>开发信配置</h2></div>
+            <label>客户名称<input id="letterName" name="letterName" value=""></label>
+            <label>客户类型
+              <select id="letterBuyer" name="letterBuyer">
+                <option value="small wholesaler">small wholesaler</option>
+                <option value="wholesale buyer">wholesale buyer</option>
+                <option value="independent retailer">independent retailer</option>
+                <option value="boutique buyer">boutique buyer</option>
+                <option value="online store owner">online store owner</option>
+              </select>
+            </label>
+            <label>主推产品
+              <select id="letterProduct" name="letterProduct">
+                <option value="smart rings">smart rings</option>
+                <option value="smart watches">smart watches</option>
+                <option value="smart bands">smart bands</option>
+                <option value="smart bracelets">smart bracelets</option>
+                <option value="smart glasses">smart glasses</option>
+                <option value="AI glasses">AI glasses</option>
+                <option value="hair dryer">hair dryer</option>
+              </select>
+            </label>
+            <label>目标市场<input id="letterRegion" name="letterRegion" value=""></label>
+            <label>开发语气
+              <select id="letterTone" name="letterTone">
+                <option value="direct">直接简洁</option>
+                <option value="friendly">友好自然</option>
+                <option value="premium">偏高端</option>
+              </select>
+            </label>
+            <div class="keyword-actions">
+              <button type="button" class="primary-btn wide" id="generateLetter">生成开发信</button>
+              <button type="button" class="ghost-btn wide" id="generateLetterWithAi">DeepSeek 生成</button>
+              <button type="button" class="ghost-btn wide" id="exportLetter">导出开发信</button>
+            </div>
+          </form>
+          <section class="panel">
+            <div class="panel-head"><h2>独立开发信系统</h2></div>
+            <div class="letter-tabs">
+              <button class="letter-tab active" data-letter-tab="email">Email</button>
+              <button class="letter-tab" data-letter-tab="follow">Follow-up</button>
+              <button class="letter-tab" data-letter-tab="dm">Social DM</button>
+            </div>
+            <div class="letter-output">
+              <label>Subject<input id="letterSubject" name="letterSubject"></label>
+              <label class="letter-pane active" data-letter-pane="email">首封开发信<textarea id="letterEmail" name="letterEmail"></textarea></label>
+              <label class="letter-pane" data-letter-pane="follow">跟进开发信<textarea id="letterFollow" name="letterFollow"></textarea></label>
+              <label class="letter-pane" data-letter-pane="dm">Facebook / LinkedIn / Instagram 私信<textarea id="letterDm" name="letterDm"></textarea></label>
+              <button type="button" class="primary-btn wide" id="copyLetter">复制当前内容</button>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="accounts">
+        <form class="settings-grid" onsubmit="return false">
+          <section class="panel form-panel">
+            <div class="panel-head"><h2>平台账号池</h2></div>
+            <label for="fbAccount">Facebook 账号</label><input id="fbAccount" name="fbAccount" value="">
+            <label for="fbPassword">Facebook 密码</label><input type="password" id="fbPassword" name="fbPassword" placeholder="输入密码（本地存储）">
+            <label for="liAccount">LinkedIn 账号</label><input id="liAccount" name="liAccount" value="">
+            <label for="liPassword">LinkedIn 密码</label><input type="password" id="liPassword" name="liPassword" placeholder="输入密码（本地存储）">
+            <label for="igAccount">Instagram 账号</label><input id="igAccount" name="igAccount" value="">
+            <label for="igPassword">Instagram 密码</label><input type="password" id="igPassword" name="igPassword" placeholder="输入密码（本地存储）">
+            <label for="loginStatus">登录状态</label><select id="loginStatus" name="loginStatus"><option value="logged_in">已登录</option><option value="pending">待扫码/验证</option><option value="paused">已暂停</option></select></label>
+            <button type="button" class="ghost-btn wide" id="saveAccountPool">保存账号池</button>
+          </section>
+          <section class="panel form-panel">
+            <div class="panel-head"><h2>采集安全策略</h2></div>
+            <label for="dailyLimit">每日采集上限</label><input type="number" id="dailyLimit" name="dailyLimit" value="0"></label>
+            <label for="targetMarket">目标市场</label><select id="targetMarket" name="targetMarket"><option value="eu_us">欧美优先</option><option value="north_america">北美优先</option><option value="europe">欧洲优先</option><option value="global">全球市场</option></select></label>
+            <label for="exceptionHandler">异常处理</label><select id="exceptionHandler" name="exceptionHandler"><option value="pause_alert">暂停并提醒</option><option value="switch_account">切换备用账号</option><option value="reduce_speed">降低采集频率</option></select></label>
+          </section>
+          <section class="panel form-panel">
+            <div class="panel-head"><h2>搜客接口</h2></div>
+            <label for="serperKey">Serper / Google Search Key</label><input type="password" id="serperKey" name="serperKey" value="" placeholder="用于真实 Google 搜索接口"></label>
+            <label for="hunterKey">Hunter.io 邮箱查询 Key</label><input type="password" id="hunterKey" name="hunterKey" value="" placeholder="通过域名查公司邮箱 (选填)"></label>
+            <label for="apolloKey">Apollo.io API Key</label><input type="password" id="apolloKey" name="apolloKey" value="" placeholder="查联系人职位/个人邮箱/电话/LinkedIn (选填)"></label>
+            <label for="emailEnhanceService">邮箱增强服务</label><input id="emailEnhanceService" name="emailEnhanceService" placeholder="Snovio / Hunter / 自定义接口"></label>
+            <label for="searchDepth2">默认搜索深度</label><select id="searchDepth2" name="searchDepth2"><option value="standard">标准：官网 + LinkedIn + 个人邮箱/公司邮箱</option><option value="contact_focus">强联系方式：优先抓取WhatsApp/WeChat/邮箱</option><option value="deep">深度：地图 + 黄页 + 交叉验证 + 多渠道联系方式</option></select></label>
+          </section>
+          <section class="panel form-panel">
+            <div class="panel-head"><h2>DeepSeek API</h2></div>
+            <label for="deepseekApiKey">API Key</label><input type="password" id="deepseekApiKey" name="deepseekApiKey" placeholder="sk-..."></label>
+            <label for="deepseekModel">模型</label><select id="deepseekModel" name="deepseekModel"><option value="deepseek-chat">deepseek-chat</option><option value="deepseek-reasoner">deepseek-reasoner</option></select></label>
+            <label for="deepseekBaseUrl">接口地址</label><input id="deepseekBaseUrl" name="deepseekBaseUrl" value="https://api.deepseek.com/chat/completions"></label>
+            <button type="button" class="ghost-btn wide" id="saveDeepseekConfig">保存 DeepSeek 配置</button>
+          </section>
+          <section class="panel form-panel">
+            <div class="panel-head"><h2>发件邮箱</h2></div>
+            <label for="senderEmail">发件邮箱</label><input id="senderEmail" name="senderEmail" value="">
+            <label for="smtpAddress">SMTP 地址</label><input id="smtpAddress" name="smtpAddress" value="">
+            <label for="smtpPassword">SMTP 密码</label><input type="password" id="smtpPassword" name="smtpPassword" placeholder="SMTP 登录密码或应用专用密码">
+            <label for="sendStrategy">发送策略</label><select id="sendStrategy" name="sendStrategy"><option value="round_robin">多邮箱轮发</option><option value="primary_only">只用主邮箱</option><option value="paused">暂停真实发送</option></select></label>
+          </section>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+  <script src="app.js"></script>
+  <noscript>您的浏览器未启用 JavaScript，请启用后使用本系统。</noscript>
+</body>
+</html>

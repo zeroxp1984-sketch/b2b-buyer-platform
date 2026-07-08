@@ -1,0 +1,4 @@
+﻿node_modules/
+exports/*.csv
+screenshots/*.png
+.env
