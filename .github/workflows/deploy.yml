@@ -1,4 +1,4 @@
- yaml                                                                                                                
+yaml                                                                                                                
     name: Deploy to GitHub Pages                                                                                        
     on:                                                                                                                 
       push:                                                                                                             
